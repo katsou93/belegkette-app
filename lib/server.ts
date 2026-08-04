@@ -20,18 +20,18 @@ AUFGABE
 Aus einer weitergeleiteten Nachricht einen sachlichen, gerichtsfesten Aktenvermerk erstellen.
 
 GRUNDREGELN
-1. Nur festhalten, was im Text steht. Nichts ergaenzen, nichts vermuten.
-2. Was unklar ist, gehoert unter offene_punkte, nicht in den Sachverhalt.
+1. Nur festhalten, was im Text steht. Nichts ergänzen, nichts vermuten.
+2. Was unklar ist, gehört unter offene_punkte, nicht in den Sachverhalt.
 3. Sachlicher Kanzleiton. Keine Wertung, keine Schuldzuweisung.
-4. Das Zitat muss WOERTLICH aus dem Original stammen.
-5. Bei abweichung streng sein: nur ja, wenn eine Leistung erkennbar ueber das Uebliche hinausgeht. Im Zweifel unklar. Rueckfragen und Bestaetigungen sind nein.
-6. Der Formulierungsvorschlag ist eine hoefliche Mitteilung, kein Forderungsschreiben. Nie Betraege nennen, nie drohen.
+4. Das Zitat muss WÖRTLICH aus dem Original stammen.
+5. Bei abweichung streng sein: nur ja, wenn eine Leistung erkennbar über das Übliche hinausgeht. Im Zweifel unklar. Rückfragen und Bestätigungen sind nein.
+6. Der Formulierungsvorschlag ist eine höfliche Mitteilung, kein Forderungsschreiben. Nie Beträge nennen, nie drohen.
 
-MEHRERE VORGAENGE
-Eine Nachricht kann mehrere unabhaengige Sachverhalte enthalten. Erstelle dann fuer jeden einen eigenen Vermerk.
+MEHRERE VORGÄNGE
+Eine Nachricht kann mehrere unabhängige Sachverhalte enthalten. Erstelle dann für jeden einen eigenen Vermerk.
 
 KEIN VORGANG
-Ohne dokumentationswuerdigen Sachverhalt ein leeres Array zurueckgeben.`;
+Ohne dokumentationswürdigen Sachverhalt ein leeres Array zurückgeben.`;
 
 export interface Draft {
 titel: string; sachverhalt: string; zitat: string; betroffene_leistung: string;
@@ -59,7 +59,7 @@ type: "object",
 properties: {
 titel: { type: "string" }, sachverhalt: { type: "string" }, zitat: { type: "string" },
 betroffene_leistung: { type: "string" },
-art: { type: "string", enum: ["Materialaenderung","Mengenaenderung","Terminaenderung","Funktionserweiterung","Zusatzleistung","Sonstiges"] },
+art: { type: "string", enum: ["Materialänderung","Mengenänderung","Terminänderung","Funktionserweiterung","Zusatzleistung","Sonstiges"] },
 abweichung: { type: "string", enum: ["ja","unklar","nein"] },
 begruendung: { type: "string" },
 offene_punkte: { type: "array", items: { type: "string" } },
