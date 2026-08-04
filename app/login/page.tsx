@@ -25,7 +25,7 @@ Belegkette
 ) : (
 <form onSubmit={go} className="card">
 <h1 style={{ fontSize: "1rem", marginBottom: 4 }}>Anmelden</h1>
-<p style={{ fontSize: ".88rem", color: "var(--muted)", marginBottom: 18 }}>Sie bekommen einen Link per E-Mail. Kein Passwort noetig.</p>
+<p style={{ fontSize: ".88rem", color: "var(--muted)", marginBottom: 18 }}>Sie bekommen einen Link per E-Mail. Kein Passwort nötig.</p>
 <label htmlFor="m">E-Mail</label>
 <input id="m" type="email" required className="inp" value={mail} onChange={(e) => setMail(e.target.value)} placeholder="name@unternehmen.de" />
 {st === "err" && <div className="err">{msg}</div>}
