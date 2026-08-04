@@ -28,7 +28,7 @@ return (
 <form onSubmit={anlegen} className="card" style={{ width: "100%", maxWidth: 430 }}>
 <h3 style={{ fontSize: ".95rem", marginBottom: 12 }}>Neues Projekt</h3>
 <label>Bezeichnung</label>
-<input className="inp" required value={name} onChange={(e) => setName(e.target.value)} placeholder="A-2418 Abfuellanlage" />
+<input className="inp" required value={name} onChange={(e) => setName(e.target.value)} placeholder="A-2418 Abfüllanlage" />
 <label style={{ marginTop: 12 }}>Auftragswert in Euro (optional)</label>
 <input className="inp" value={wert} onChange={(e) => setWert(e.target.value)} placeholder="4200000" inputMode="numeric" />
 {fehler && <div className="err">{fehler}</div>}
@@ -58,13 +58,13 @@ if (!offen) return <button className="btn acc" onClick={() => setOffen(true)}>Vo
 return (
 <form onSubmit={senden} className="card" style={{ width: "100%" }}>
 <h3 style={{ fontSize: ".95rem", marginBottom: 4 }}>Vorgang erfassen</h3>
-<p style={{ fontSize: ".82rem", color: "var(--muted)", marginBottom: 14 }}>Weitergeleitete Mail, Protokollabsatz oder Gespraechsnotiz einfuegen.</p>
+<p style={{ fontSize: ".82rem", color: "var(--muted)", marginBottom: 14 }}>Weitergeleitete Mail, Protokollabsatz oder Gesprächsnotiz einfügen.</p>
 <div className="row">
 <div><label>Quelle</label><select className="inp" value={quelle} onChange={(e) => setQuelle(e.target.value)}>{QUELLEN.map((q) => <option key={q}>{q}</option>)}</select></div>
 <div><label>Datum des Vorgangs</label><input type="date" className="inp" value={tag} onChange={(e) => setTag(e.target.value)} /></div>
 </div>
 <label>Wortlaut</label>
-<textarea className="inp" required value={text} onChange={(e) => setText(e.target.value)} placeholder="Hier die weitergeleitete Nachricht einfuegen ..." />
+<textarea className="inp" required value={text} onChange={(e) => setText(e.target.value)} placeholder="Hier die weitergeleitete Nachricht einfügen ..." />
 {msg && <div className="err">{msg}</div>}
 <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
 <button className="btn acc" disabled={busy || text.trim().length < 20}>{busy ? "Vermerk wird erstellt ..." : "Vermerk erstellen"}</button>
@@ -114,7 +114,7 @@ return (
 <div className="vmm">Vorgang: {datum(e.occurred_on)}<br />Quelle: {e.source}<br />Erfasst: {datum(e.created_at)}</div>
 </header>
 <div className="blk"><div className="k">Sachverhalt</div><p style={{ fontSize: ".9rem" }}>{e.facts}</p></div>
-<div className="blk"><div className="k">Woertliches Zitat</div><blockquote className="zitat">{e.quote}</blockquote></div>
+<div className="blk"><div className="k">Wörtliches Zitat</div><blockquote className="zitat">{e.quote}</blockquote></div>
 <div className="blk"><div className="k">Einordnung</div>
 <dl className="kv">
 <dt>Betroffene Leistung</dt><dd>{e.affected_scope ?? "-"}</dd>
@@ -124,7 +124,7 @@ return (
 </dl>
 </div>
 {!!e.open_questions?.length && <div className="blk"><div className="k">Offene Punkte</div><ul className="off">{e.open_questions.map((q, i) => <li key={i}>{q}</li>)}</ul></div>}
-{e.suggestion && <div className="blk"><div className="k">Formulierungsvorschlag fuer die Mitteilung</div><div className="vorschlag">{e.suggestion}</div></div>}
+{e.suggestion && <div className="blk"><div className="k">Formulierungsvorschlag für die Mitteilung</div><div className="vorschlag">{e.suggestion}</div></div>}
 <footer className="vmact">
 <select className="inp" style={{ width: "auto", padding: "6px 10px", fontSize: ".8rem" }} value={status} disabled={busy} onChange={(ev) => setze(ev.target.value as EntryStatus)}>
 {STATI.map((s) => <option key={s} value={s}>{s}</option>)}
