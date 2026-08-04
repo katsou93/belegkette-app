@@ -17,7 +17,7 @@ if (!p) return NextResponse.json({ error: "Projekt nicht gefunden." }, { status:
 let drafts;
 try { drafts = await erstelleVermerke({ projekt: p.name, auftragswert: p.contract_value, quelle, datum, text }); }
 catch (e) { console.error(e); return NextResponse.json({ error: "Vermerk konnte nicht erstellt werden." }, { status: 502 }); }
-if (!drafts.length) return NextResponse.json({ vermerke: [], hinweis: "Kein dokumentationswuerdiger Vorgang erkannt." });
+if (!drafts.length) return NextResponse.json({ vermerke: [], hinweis: "Kein dokumentationswürdiger Vorgang erkannt." });
 const rows = drafts.map((d) => ({
 project_id: projectId, occurred_on: datum, source: quelle, raw_text: text,
 title: d.titel, facts: d.sachverhalt, quote: d.zitat, affected_scope: d.betroffene_leistung,
