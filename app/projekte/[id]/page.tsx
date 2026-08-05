@@ -1,28 +1,33 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { sbServer } from "@/lib/server";
-import { euro, type Entry } from "@/lib/browser";
+import { euro, type Entry, type Sicherheit } from "@/lib/browser";
 import { VermerkKarte, Erfassen, ExportKnopf } from "@/components/ui";
+import { Sicherheiten, Terminkette, SchlusszahlungWarnung } from "@/components/akte";
+import { Projektdaten } from "@/components/stamm";
+import { Seitenleiste } from "@/components/nav";
 export const dynamic = "force-dynamic";
 export default async function Projekt({ params }: { params: Promise<{ id: string }> }) {
 const { id } = await params;
 const sb = await sbServer();
-const { data: p } = await sb.from("projects").select("id,name,contract_value,inbound_token").eq("id", id).single();
+const { data: p } = await sb.from("projects").select("*").eq("id", id).single();
 if (!p) notFound();
-const { data: alle } = await sb.from("projects").select("id,name").eq("status", "aktiv").order("created_at", { ascending: false });
 const { data: rows } = await sb.from("entries").select("*").eq("project_id", id).order("seq", { ascending: false });
 const list = (rows ?? []) as Entry[];
 const offen = list.filter((e) => e.deviation === "ja" && e.status === "offen").length;
+
+const { data: sich } = await sb.from("securities").select("*").eq("project_id", id).order("release_due_on", { ascending: true, nullsFirst: false });
+const posten = (sich ?? []) as Sicherheit[];
+
+const { data: lieferanten } = await sb.from("suppliers").select("id,name").order("name");
+const offeneVorgaenge = list.filter((e) => e.deviation === "ja" && (e.status === "offen" || e.status === "angezeigt"));
+const wertOffen = offeneVorgaenge.reduce((a, e) => a + Number(e.estimated_value ?? 0), 0);
+const sicherheitenOffen = posten.filter((x) => x.status === "offen" || x.status === "angefordert").reduce((a, x) => a + Number(x.amount), 0);
+const termine = list.filter((e) => e.schedule_impact && e.status !== "verworfen")
+  .sort((a, b) => a.occurred_on.localeCompare(b.occurred_on) || a.seq - b.seq);
 return (
 <div className="shell">
-<aside className="side">
-<Link href="/projekte" className="brand">
-<svg width="20" height="20" viewBox="0 0 32 32"><path d="M16 6 L26 26 H6 Z" fill="none" stroke="#ff9e2c" strokeWidth="3" strokeLinejoin="round"/><circle cx="16" cy="20" r="2.5" fill="#ff9e2c"/></svg>
-Belegkette
-</Link>
-<div className="grp">Projekte</div>
-{(alle ?? []).map((x) => <Link key={x.id} href={`/projekte/${x.id}`} className="itm">{x.name}</Link>)}
-</aside>
+<Seitenleiste />
 <main className="main">
 <div className="head">
 <div>
@@ -31,10 +36,14 @@ Belegkette
 </div>
 <div style={{ display: "flex", gap: 8 }}>
 <ExportKnopf projekt={p.name} entries={list} />
-<Erfassen projectId={p.id} />
+<Erfassen projectId={p.id} lieferanten={lieferanten ?? []} />
 </div>
 </div>
-<div className="hinweis">Weiterleiten an: <b>p-{p.inbound_token}@in.belegkette.de</b></div>
+<div className="hinweis">Weiterleiten an: <b>p-{p.inbound_token}@in.prooftrail.de</b></div>
+<SchlusszahlungWarnung offeneVorgaenge={offeneVorgaenge.length} wertOffen={wertOffen} sicherheitenOffen={sicherheitenOffen} />
+<Projektdaten projekt={p} />
+<Sicherheiten projectId={p.id} posten={posten} />
+<Terminkette eintraege={termine} />
 {!list.length ? <div className="card" style={{ textAlign: "center", color: "var(--muted)", fontSize: ".9rem" }}>Noch keine Vermerke.</div> : list.map((e) => <VermerkKarte key={e.id} e={e} />)}
 </main>
 </div>
