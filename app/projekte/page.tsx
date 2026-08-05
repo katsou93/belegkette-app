@@ -2,11 +2,13 @@ import Link from "next/link";
 import { sbServer } from "@/lib/server";
 import { euro } from "@/lib/browser";
 import { NeuesProjekt } from "@/components/ui";
+import { Seitenleiste } from "@/components/nav";
 export const dynamic = "force-dynamic";
 export default async function Projekte() {
 const sb = await sbServer();
 const { data: { user } } = await sb.auth.getUser();
 const { data: projekte } = await sb.from("projects").select("id,name,contract_value").eq("status", "aktiv").order("created_at", { ascending: false });
+const { data: kunden } = await sb.from("customers").select("id,name").order("name");
 const ids = (projekte ?? []).map((p) => p.id);
 const { data: entries } = ids.length ? await sb.from("entries").select("project_id,deviation,status").in("project_id", ids) : { data: [] as { project_id: string; deviation: string; status: string }[] };
 const zaehl = (id: string) => {
@@ -15,19 +17,11 @@ return { g: e.length, o: e.filter((x) => x.deviation === "ja" && x.status === "o
 };
 return (
 <div className="shell">
-<aside className="side">
-<Link href="/projekte" className="brand">
-<svg width="20" height="20" viewBox="0 0 32 32"><path d="M16 6 L26 26 H6 Z" fill="none" stroke="#ff9e2c" strokeWidth="3" strokeLinejoin="round"/><circle cx="16" cy="20" r="2.5" fill="#ff9e2c"/></svg>
-Belegkette
-</Link>
-<div className="grp">Projekte</div>
-{(projekte ?? []).map((p) => <Link key={p.id} href={`/projekte/${p.id}`} className="itm">{p.name}</Link>)}
-<div className="sidefoot">{user?.email}</div>
-</aside>
+<Seitenleiste aktiv="projekte" />
 <main className="main">
 <div className="head">
 <div><h1>Projekte</h1><div className="sub">{projekte?.length ?? 0} aktiv</div></div>
-<NeuesProjekt />
+<NeuesProjekt kunden={kunden ?? []} />
 </div>
 {!projekte?.length ? <div className="card" style={{ textAlign: "center", color: "var(--muted)", fontSize: ".9rem" }}>Noch kein Projekt angelegt.</div> : (
 <table>
