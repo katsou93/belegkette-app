@@ -24,7 +24,7 @@ GRUNDREGELN
 2. Was unklar ist, gehört unter offene_punkte, nicht in den Sachverhalt.
 3. Sachlicher Kanzleiton. Keine Wertung, keine Schuldzuweisung.
 4. Das Zitat muss WÖRTLICH aus dem Original stammen.
-5. Bei abweichung streng sein: nur ja, wenn eine Leistung erkennbar über das Übliche hinausgeht. Im Zweifel unklar. Rückfragen und Bestätigungen sind nein.
+5. Bei abweichung streng sein. Ist ein LEISTUNGSUMFANG angegeben, pruefe ausschliesslich dagegen: ja nur, wenn die Anforderung dort erkennbar nicht enthalten ist. Ohne Leistungsumfang urteile zurueckhaltender und nutze haeufiger unklar. Rueckfragen und Bestaetigungen sind immer nein.
 6. Der Formulierungsvorschlag ist eine höfliche Mitteilung, kein Forderungsschreiben. Nie Beträge nennen, nie drohen.
 
 MEHRERE VORGÄNGE
@@ -36,12 +36,21 @@ Ohne dokumentationswürdigen Sachverhalt ein leeres Array zurückgeben.`;
 export interface Draft {
 titel: string; sachverhalt: string; zitat: string; betroffene_leistung: string;
 art: string; abweichung: "ja" | "unklar" | "nein"; begruendung: string;
-offene_punkte: string[]; vorschlag: string;
+offene_punkte: string[]; vorschlag: string; terminwirkung: boolean;
 }
 
-export async function erstelleVermerke(i: { projekt: string; auftragswert?: number | null; quelle: string; datum: string; text: string }): Promise<Draft[]> {
+export async function erstelleVermerke(i: { projekt: string; auftragswert?: number | null; quelle: string; datum: string; text: string; umfang?: string | null }): Promise<Draft[]> {
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-const kontext = [`Projekt: ${i.projekt}`, i.auftragswert ? `Auftragswert: ${i.auftragswert} EUR` : "", `Quelle: ${i.quelle}`, `Datum: ${i.datum}`, "", "NACHRICHT:", i.text.slice(0, 40000)].filter(Boolean).join("\n");
+const kontext = [
+`Projekt: ${i.projekt}`,
+i.auftragswert ? `Auftragswert: ${i.auftragswert} EUR` : "",
+`Quelle: ${i.quelle}`,
+`Datum: ${i.datum}`,
+i.umfang ? `\nVEREINBARTER LEISTUNGSUMFANG:\n${i.umfang.slice(0, 8000)}` : "",
+"",
+"NACHRICHT:",
+i.text.slice(0, 40000),
+].filter(Boolean).join("\n");
 const res = await client.messages.create({
 model: MODEL,
 max_tokens: 2000,
@@ -64,8 +73,9 @@ abweichung: { type: "string", enum: ["ja","unklar","nein"] },
 begruendung: { type: "string" },
 offene_punkte: { type: "array", items: { type: "string" } },
 vorschlag: { type: "string" },
+terminwirkung: { type: "boolean" },
 },
-required: ["titel","sachverhalt","zitat","betroffene_leistung","art","abweichung","begruendung","offene_punkte","vorschlag"],
+required: ["titel","sachverhalt","zitat","betroffene_leistung","art","abweichung","begruendung","offene_punkte","vorschlag","terminwirkung"],
 },
 },
 },
