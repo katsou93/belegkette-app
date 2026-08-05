@@ -1,15 +1,16 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { sbBrowser, datum, type Entry, type EntryStatus } from "@/lib/browser";
+import { sbBrowser, datum, HERKUNFT, type Entry, type EntryStatus } from "@/lib/browser";
+import { WertFeld, Schreiben } from "./akte";
 
 const LABEL: Record<string, string> = { ja: "Abweichung", unklar: "unklar", nein: "keine Abweichung" };
 const STATI: EntryStatus[] = ["offen", "angezeigt", "erledigt", "verworfen"];
 const QUELLEN = ["E-Mail vom Kunden", "Besprechungsprotokoll", "Telefonnotiz", "Nachricht auf der Baustelle", "Sonstiges"];
 
-export function NeuesProjekt() {
+export function NeuesProjekt({ kunden = [] }: { kunden?: { id: string; name: string }[] }) {
 const [offen, setOffen] = useState(false);
-const [name, setName] = useState(""); const [wert, setWert] = useState("");
+const [name, setName] = useState(""); const [wert, setWert] = useState(""); const [kunde, setKunde] = useState("");
 const [busy, setBusy] = useState(false); const [fehler, setFehler] = useState("");
 const router = useRouter();
 async function anlegen(e: React.FormEvent) {
@@ -18,7 +19,7 @@ const sb = sbBrowser();
 const { data: { user } } = await sb.auth.getUser();
 const { data: m } = await sb.from("memberships").select("org_id").eq("user_id", user!.id).limit(1).single();
 if (!m) { setFehler("Kein Betrieb zugeordnet."); setBusy(false); return; }
-const { data, error } = await sb.from("projects").insert({ org_id: m.org_id, name: name.trim(), contract_value: wert ? Number(wert.replace(/[^\d]/g, "")) : null }).select("id").single();
+const { data, error } = await sb.from("projects").insert({ org_id: m.org_id, name: name.trim(), contract_value: wert ? Number(wert.replace(/[^\d]/g, "")) : null, customer_id: kunde || null }).select("id").single();
 setBusy(false);
 if (error) { setFehler(error.message); return; }
 setOffen(false); setName(""); setWert(""); router.push(`/projekte/${data.id}`); router.refresh();
@@ -31,6 +32,11 @@ return (
 <input className="inp" required value={name} onChange={(e) => setName(e.target.value)} placeholder="A-2418 Abfüllanlage" />
 <label style={{ marginTop: 12 }}>Auftragswert in Euro (optional)</label>
 <input className="inp" value={wert} onChange={(e) => setWert(e.target.value)} placeholder="4200000" inputMode="numeric" />
+<label style={{ marginTop: 12 }}>Auftraggeber</label>
+<select className="inp" value={kunde} onChange={(e) => setKunde(e.target.value)}>
+<option value="">— nicht zugeordnet —</option>
+{kunden.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}
+</select>
 {fehler && <div className="err">{fehler}</div>}
 <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
 <button className="btn acc" disabled={busy}>{busy ? "Wird angelegt ..." : "Anlegen"}</button>
@@ -40,15 +46,17 @@ return (
 );
 }
 
-export function Erfassen({ projectId }: { projectId: string }) {
+export function Erfassen({ projectId, lieferanten }: { projectId: string; lieferanten: { id: string; name: string }[] }) {
 const [offen, setOffen] = useState(false);
 const [text, setText] = useState(""); const [quelle, setQuelle] = useState(QUELLEN[0]);
 const [tag, setTag] = useState(new Date().toISOString().slice(0, 10));
 const [busy, setBusy] = useState(false); const [msg, setMsg] = useState("");
+const [lieferant, setLieferant] = useState("");
+const [herkunft, setHerkunft] = useState<"weitergeleitet" | "eigene_notiz">("weitergeleitet");
 const router = useRouter();
 async function senden(e: React.FormEvent) {
 e.preventDefault(); setBusy(true); setMsg("");
-const r = await fetch("/api/vermerk", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ projectId, text, quelle, datum: tag }) });
+const r = await fetch("/api/vermerk", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ projectId, text, quelle, datum: tag, supplierId: lieferant || null, herkunft }) });
 const j = await r.json(); setBusy(false);
 if (!r.ok) { setMsg(j.error ?? "Fehler."); return; }
 if (!j.vermerke?.length) { setMsg(j.hinweis ?? "Kein Vorgang erkannt."); return; }
@@ -63,6 +71,21 @@ return (
 <div><label>Quelle</label><select className="inp" value={quelle} onChange={(e) => setQuelle(e.target.value)}>{QUELLEN.map((q) => <option key={q}>{q}</option>)}</select></div>
 <div><label>Datum des Vorgangs</label><input type="date" className="inp" value={tag} onChange={(e) => setTag(e.target.value)} /></div>
 </div>
+<div className="row">
+<div><label>Herkunft</label>
+<select className="inp" value={herkunft} onChange={(e) => setHerkunft(e.target.value as "weitergeleitet" | "eigene_notiz")}>
+<option value="weitergeleitet">Weitergeleitete Nachricht</option>
+<option value="eigene_notiz">Eigene Notiz</option>
+</select></div>
+<div><label>Gegenseite</label>
+<select className="inp" value={lieferant} onChange={(e) => setLieferant(e.target.value)}>
+<option value="">Auftraggeber</option>
+{lieferanten.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+</select></div>
+</div>
+<p className="fussnote" style={{ marginTop: 0, marginBottom: 10 }}>
+Eine weitergeleitete Nachricht enthält den Wortlaut der Gegenseite. Eine eigene Notiz ist eine Parteierklärung — beides wird im Vermerk unterschieden.
+</p>
 <label>Wortlaut</label>
 <textarea className="inp" required value={text} onChange={(e) => setText(e.target.value)} placeholder="Hier die weitergeleitete Nachricht einfügen ..." />
 {msg && <div className="err">{msg}</div>}
@@ -111,7 +134,9 @@ return (
 <div className="vmnr">VERMERK {String(e.seq).padStart(3, "0")}</div>
 <div className="vmt">{e.title}</div>
 </div>
-<div className="vmm">Vorgang: {datum(e.occurred_on)}<br />Quelle: {e.source}<br />Erfasst: {datum(e.created_at)}</div>
+<div className="vmm">Vorgang: {datum(e.occurred_on)}<br />Quelle: {e.source}<br />Erfasst: {datum(e.created_at)}<br />
+<span title={HERKUNFT[e.source_kind]?.hinweis}>Herkunft: {HERKUNFT[e.source_kind]?.text ?? e.source_kind}</span>
+{e.counterparty_kind === "lieferant" && <><br />Gegenseite: Lieferant</>}</div>
 </header>
 <div className="blk"><div className="k">Sachverhalt</div><p style={{ fontSize: ".9rem" }}>{e.facts}</p></div>
 <div className="blk"><div className="k">Wörtliches Zitat</div><blockquote className="zitat">{e.quote}</blockquote></div>
@@ -129,6 +154,8 @@ return (
 <select className="inp" style={{ width: "auto", padding: "6px 10px", fontSize: ".8rem" }} value={status} disabled={busy} onChange={(ev) => setze(ev.target.value as EntryStatus)}>
 {STATI.map((s) => <option key={s} value={s}>{s}</option>)}
 </select>
+{e.deviation === "ja" && <WertFeld e={e} />}
+<Schreiben entryId={e.id} seq={e.seq} />
 <button className="btn sec sm" onClick={() => navigator.clipboard.writeText(alsText(e))}>Vermerk kopieren</button>
 {e.suggestion && <button className="btn sec sm" onClick={() => navigator.clipboard.writeText(e.suggestion!)}>Nur Mitteilung kopieren</button>}
 </footer>
