@@ -1,0 +1,4 @@
+{
+  "regions": ["fra1"],
+  "crons": [{ "path": "/api/fristen", "schedule": "0 6 * * 1-5" }]
+}
