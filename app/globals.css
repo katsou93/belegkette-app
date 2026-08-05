@@ -56,3 +56,27 @@ ul.off li:before{content:"?";position:absolute;left:0;color:var(--accentd);font-
 .err{background:#fdf3f2;border:1px solid #f3d3d0;color:var(--bad);border-radius:8px;padding:11px 14px;font-size:.86rem;margin-top:10px}
 .mitte{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}
 @media(max-width:760px){.shell{flex-direction:column}.side{width:100%}.main{padding:18px}.row{grid-template-columns:1fr}}
+
+/* --- Akte: Warnung, Wertfeld, Sicherheiten, Terminkette --- */
+.warnung{border:1px solid #f0d5a8;background:#fff8ee;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.warnung-t{font-weight:650;font-size:.9rem;color:#8a5a00;margin-bottom:6px}
+.warnung ul{margin:0 0 8px;padding-left:18px;font-size:.87rem}
+.warnung li{margin-bottom:3px}
+.warnung-h{font-size:.78rem;color:var(--muted);margin:0;line-height:1.5}
+.abschnitt-kopf{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.abschnitt-kopf h3{font-size:.95rem;margin:0 0 2px}
+.fussnote{font-size:.78rem;color:var(--muted);margin:10px 0 0;line-height:1.5}
+.faellig{color:#b3261e;font-weight:600}
+.inp.mini{width:auto;padding:4px 8px;font-size:.78rem}
+.wertfeld{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted)}
+.wertfeld label{margin:0;font-size:.78rem}
+.wertfeld .inp{width:110px;padding:5px 9px;font-size:.82rem;text-align:right}
+.wertfeld .einheit{color:var(--muted)}
+.wertfeld .ok{color:#0f7b5f;font-size:.75rem}
+.kette{list-style:none;margin:12px 0 0;padding:0;border-left:2px solid var(--line)}
+.kette li{position:relative;padding:0 0 14px 18px}
+.kette li::before{content:"";position:absolute;left:-5px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--acc,#ff9e2c)}
+.kette-datum{display:inline-block;min-width:88px;font-size:.78rem;color:var(--muted)}
+.kette-text b{font-size:.88rem;font-weight:600}
+.kette-quelle{display:block;font-size:.76rem;color:var(--muted);margin-top:1px}
+.itm.an{background:rgba(255,158,44,.13);color:var(--ink,#e8eef5)}
