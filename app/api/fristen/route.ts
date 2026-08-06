@@ -35,6 +35,18 @@ export async function GET(req: NextRequest) {
     .in("status", ["offen", "angezeigt"])
     .eq("deviation", "ja");
 
+  // Befunde je Betrieb — das ist der Teil, der an die Geschäftsführung geht.
+  const { data: berichte } = await sb
+    .from("wochenbericht")
+    .select("org_id,projekte,rot,gelb,gruen,betrag_rot,betrag_gesamt,sicherheiten_gebunden");
+
+  const { data: rote } = await sb
+    .from("projekt_ampel")
+    .select("org_id,projekt,ampel,betrag_betroffen,zusammenfassung")
+    .eq("ampel", "rot")
+    .order("betrag_betroffen", { ascending: false })
+    .limit(50);
+
   const { data: sicherheiten } = await sb
     .from("securities")
     .select("id,kind,amount,release_due_on,reminder_on,project_id,projects(name,org_id)")
@@ -48,6 +60,8 @@ export async function GET(req: NextRequest) {
     summe_sicherheiten: (sicherheiten ?? []).reduce((a, s) => a + Number(s.amount ?? 0), 0),
     vorgaenge: vorgaenge ?? [],
     sicherheiten: sicherheiten ?? [],
+    berichte: berichte ?? [],
+    rote_projekte: rote ?? [],
   };
 
   // Versand nur, wenn ein Maildienst hinterlegt ist. Ohne Schluessel
@@ -65,11 +79,18 @@ export async function GET(req: NextRequest) {
   const resend = geheim.resendKey;
   const an = geheim.fristenEmpfaenger;
   if (resend && an && (bericht.faellige_vorgaenge || bericht.faellige_sicherheiten)) {
+    const ampeln = (rote ?? []).slice(0, 10)
+      .map((r) => `  ${r.projekt}: ${r.zusammenfassung}`)
+      .join("\n");
+
     const zeilen = [
       `Stand ${heute}`,
       ``,
       `${bericht.faellige_vorgaenge} Vorgang/Vorgaenge zur Wiedervorlage`,
       `${bericht.faellige_sicherheiten} Sicherheit(en) zur Rueckforderung, zusammen ${bericht.summe_sicherheiten.toLocaleString("de-DE")} EUR`,
+      ``,
+      `${(rote ?? []).length} Projekt(e) auf Rot:`,
+      ampeln || `  keine`,
     ].join("\n");
     await fetch("https://api.resend.com/emails", {
       method: "POST",
