@@ -80,3 +80,28 @@ ul.off li:before{content:"?";position:absolute;left:0;color:var(--accentd);font-
 .kette-text b{font-size:.88rem;font-weight:600}
 .kette-quelle{display:block;font-size:.76rem;color:var(--muted);margin-top:1px}
 .itm.an{background:rgba(255,158,44,.13);color:var(--ink,#e8eef5)}
+
+/* ---------------------------------------------------------------
+   Betreibersicht
+--------------------------------------------------------------- */
+.kacheln{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.kachel{background:#fff;border:1px solid #e3e8ee;border-radius:10px;padding:14px 16px}
+.kachel-gross{font-size:1.6rem;font-weight:640;letter-spacing:-.02em;color:#0d1b2a}
+.kachel-klein{font-size:.78rem;color:#5b6b7c;margin-top:2px}
+.mini{font-size:.72rem;color:#8593a2;margin-top:3px}
+.tabellenrahmen{overflow-x:auto;margin:0 -4px}
+.tab{width:100%;border-collapse:collapse;font-size:.82rem}
+.tab th{text-align:left;font-weight:560;color:#5b6b7c;padding:7px 10px;border-bottom:1px solid #e3e8ee;white-space:nowrap}
+.tab td{padding:9px 10px;border-bottom:1px solid #f0f3f6;vertical-align:top}
+.tab tr:last-child td{border-bottom:none}
+.tab .r{text-align:right}
+.tab .blass{opacity:.55}
+.adminakt{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
+.btn.sm{padding:3px 9px;font-size:.74rem}
+.balken{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:6px 0 14px;background:#eef1f5}
+.balken-teil{display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:560;color:#fff;white-space:nowrap}
+.balken-teil.t-ja{background:#c2410c}
+.balken-teil.t-unklar{background:#b08900}
+.balken-teil.t-nein{background:#4b7f5e}
+.liste-eng{margin:0;padding-left:18px;font-size:.84rem;color:#3d4d5c}
+.liste-eng li{margin-bottom:5px}
