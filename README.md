@@ -1,4 +1,4 @@
-# Prooftrail
+# Aktenfest
 
 Projektakte für den Maschinen- und Anlagenbau. Eine weitergeleitete Nachricht
 wird zu einem datierten, unveränderlichen Aktenvermerk mit wörtlichem Zitat.
@@ -8,8 +8,8 @@ wird zu einem datierten, unveränderlichen Aktenvermerk mit wörtlichem Zitat.
 ## In fünf Minuten laufen lassen
 
 ```bash
-git clone https://github.com/katsou93/belegkette-app.git prooftrail
-cd prooftrail
+git clone https://github.com/katsou93/belegkette-app.git aktenfest
+cd aktenfest
 npm ci
 cp .env.example .env.local     # Werte eintragen, siehe unten
 npm test                       # läuft ohne jede Konfiguration
@@ -81,9 +81,11 @@ jede hat einen Test, der sie zu brechen versucht:
 | Inhalte sind nach dem Anlegen unveränderlich | `entries_immutable`, `entries_no_delete` | `akte.test.ts` |
 | Manipulation am Datenbestand vorbei ist nachweisbar | SHA-256-Kette, `kette_pruefen` | `akte.test.ts` |
 | Kein Betrieb sieht die Daten eines anderen | Zeilensicherheit auf jeder Tabelle | `akte.test.ts` |
+| Rohtexte lassen sich löschen, ohne die Kette zu brechen | Hash über `sha256(raw_text)` | `loeschung.test.ts` |
+| Späterfassung ist erkennbar und nicht wegzuwischen | `spaet_erfasst`, unveränderlich | `loeschung.test.ts` |
 
 ```bash
-npm test    # 39 Tests, rund zwei Sekunden
+npm test    # 70 Tests, rund vier Sekunden
 ```
 
 ---
@@ -114,6 +116,13 @@ Middleware ausdrücklich freigibt, weil Vercel kein Sitzungscookie schickt.
 vollständig lesbar und exportierbar, nur neue Vorgänge sind gesperrt. Das
 ist Absicht: die eigene Projektakte als Geisel zu nehmen wäre bei diesem
 Produkt besonders unanständig.
+
+**Löschkonzept:** Nach Projektabschluss plus `orgs.rohtext_tage` (Vorgabe 90)
+entfernt der Cron die Rohtexte der weitergeleiteten Nachrichten. Vermerk,
+Zitat und Prüfsumme bleiben. Weil in die Kette nur `sha256(raw_text)` eingeht,
+bleibt sie prüfbar — und wer das Original noch im Postfach hat, kann über
+`rohtext_nachweisen()` belegen, dass es genau dieses war. Begründet in
+Migration 0012.
 
 **Kostenbremse:** je Nutzer 30 Aufrufe pro Stunde und 200 pro Tag,
 gezählt in der Datenbank (nicht im Prozessspeicher — auf Vercel liefe
