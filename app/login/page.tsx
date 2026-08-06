@@ -15,7 +15,7 @@ return (
 <div style={{ width: "100%", maxWidth: 380 }}>
 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 26, fontWeight: 700, fontSize: "1.1rem" }}>
 <svg width="26" height="26" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#0b1b2b"/><path d="M16 6 L26 26 H6 Z" fill="none" stroke="#ff9e2c" strokeWidth="2.5" strokeLinejoin="round"/><circle cx="16" cy="20" r="2.5" fill="#ff9e2c"/></svg>
-Belegkette
+Aktenfest
 </div>
 {st === "ok" ? (
 <div className="card">
