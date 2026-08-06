@@ -138,6 +138,25 @@ return (
 <span title={HERKUNFT[e.source_kind]?.hinweis}>Herkunft: {HERKUNFT[e.source_kind]?.text ?? e.source_kind}</span>
 {e.counterparty_kind === "lieferant" && <><br />Gegenseite: Lieferant</>}</div>
 </header>
+
+{/* Späterfassung offen ausweisen. Ein Vermerk, der Monate nach dem
+    Vorgang entstanden ist, hat weniger Gewicht — das zu verschweigen
+    wäre der schnellste Weg, die ganze Akte angreifbar zu machen. */}
+{e.spaet_erfasst && (
+  <div className="hinweis" style={{ margin: "0 0 12px" }}>
+    <b>Nachträglich erfasst.</b> Der Vorgang datiert vom {datum(e.occurred_on)},
+    festgehalten wurde er am {datum(e.created_at)}. Zeitnahe Vermerke haben im
+    Streitfall mehr Gewicht — dieser bleibt trotzdem besser als keiner.
+  </div>
+)}
+
+{e.raw_text_geloescht_am && (
+  <div className="hinweis" style={{ margin: "0 0 12px" }}>
+    <b>Rohtext entfernt</b> am {datum(e.raw_text_geloescht_am)} nach Ablauf der
+    Aufbewahrungsfrist. Vermerk, Zitat und Prüfsumme bleiben unverändert. Wer die
+    Originalnachricht noch hat, kann sie jederzeit gegen die Prüfsumme abgleichen.
+  </div>
+)}
 <div className="blk"><div className="k">Sachverhalt</div><p style={{ fontSize: ".9rem" }}>{e.facts}</p></div>
 <div className="blk"><div className="k">Wörtliches Zitat</div><blockquote className="zitat">{e.quote}</blockquote></div>
 <div className="blk"><div className="k">Einordnung</div>
