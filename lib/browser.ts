@@ -33,6 +33,7 @@ discard_reason: DiscardReason | null; source_kind: SourceKind;
 prev_hash: string | null; hash: string | null;
 counterparty_kind: Gegenseite; supplier_id: string | null; schedule_impact: boolean;
 notified_on: string | null; notified_kind: string | null;
+raw_text_hash: string; raw_text_geloescht_am: string | null; spaet_erfasst: boolean;
 }
 export const HERKUNFT: Record<SourceKind, { text: string; hinweis: string }> = {
 weitergeleitet: { text: "Weitergeleitet", hinweis: "Nachricht Dritter — enthält den Wortlaut der Gegenseite." },
