@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { oeffentlich, geheim } from "@/lib/env";
+import { gleichInKonstanterZeit, fehler } from "@/lib/http";
 
 export const runtime = "nodejs";
 
@@ -11,19 +13,19 @@ export const runtime = "nodejs";
  * Zeilensicherheit, deshalb darf dieser Endpunkt nicht offen sein.
  */
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const kopf = req.headers.get("authorization");
-  if (!secret || kopf !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Nicht berechtigt." }, { status: 401 });
+  // Vergleich in konstanter Zeit, damit die Laufzeit das Geheimnis nicht verrät.
+  const kopf = req.headers.get("authorization") ?? "";
+  let erwartet: string;
+  try {
+    erwartet = `Bearer ${geheim.cronSecret}`;
+  } catch {
+    return fehler(500, "Nicht konfiguriert: CRON_SECRET fehlt.");
   }
+  if (!gleichInKonstanterZeit(kopf, erwartet)) return fehler(401, "Nicht berechtigt.");
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const dienst = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !dienst) {
-    return NextResponse.json({ error: "Nicht konfiguriert." }, { status: 500 });
-  }
-
-  const sb = createClient(url, dienst, { auth: { persistSession: false } });
+  const sb = createClient(oeffentlich.supabaseUrl, geheim.serviceRoleKey, {
+    auth: { persistSession: false },
+  });
   const heute = new Date().toISOString().slice(0, 10);
 
   const { data: vorgaenge } = await sb
@@ -50,8 +52,11 @@ export async function GET(req: NextRequest) {
 
   // Versand nur, wenn ein Maildienst hinterlegt ist. Ohne Schluessel
   // liefert der Endpunkt den Bericht zurueck, statt stillschweigend nichts zu tun.
-  const resend = process.env.RESEND_API_KEY;
-  const an = process.env.FRISTEN_EMPFAENGER;
+  // Alte Verbrauchszeilen wegräumen, solange wir ohnehin hier sind.
+  await sb.rpc("ki_verbrauch_aufraeumen").then(undefined, () => undefined);
+
+  const resend = geheim.resendKey;
+  const an = geheim.fristenEmpfaenger;
   if (resend && an && (bericht.faellige_vorgaenge || bericht.faellige_sicherheiten)) {
     const zeilen = [
       `Stand ${heute}`,
