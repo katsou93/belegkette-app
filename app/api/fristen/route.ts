@@ -52,8 +52,15 @@ export async function GET(req: NextRequest) {
 
   // Versand nur, wenn ein Maildienst hinterlegt ist. Ohne Schluessel
   // liefert der Endpunkt den Bericht zurueck, statt stillschweigend nichts zu tun.
-  // Alte Verbrauchszeilen wegräumen, solange wir ohnehin hier sind.
+  // Aufräumen, solange wir ohnehin hier sind.
   await sb.rpc("ki_verbrauch_aufraeumen").then(undefined, () => undefined);
+
+  // Rohtexte abgeschlossener Projekte nach Ablauf der Aufbewahrungsfrist
+  // entfernen. Läuft täglich, damit die Löschung nicht davon abhängt, dass
+  // jemand daran denkt — das ist der Kern eines belastbaren Löschkonzepts.
+  const { data: bereinigt } = await sb.rpc("rohtexte_bereinigen").single<{
+    betroffene: number; projekte: number;
+  }>();
 
   const resend = geheim.resendKey;
   const an = geheim.fristenEmpfaenger;
@@ -68,13 +75,13 @@ export async function GET(req: NextRequest) {
       method: "POST",
       headers: { authorization: `Bearer ${resend}`, "content-type": "application/json" },
       body: JSON.stringify({
-        from: "Prooftrail <fristen@prooftrail.de>",
+        from: "Aktenfest <fristen@aktenfest.de>",
         to: [an],
-        subject: `Prooftrail — ${bericht.faellige_vorgaenge + bericht.faellige_sicherheiten} Fristen faellig`,
+        subject: `Aktenfest — ${bericht.faellige_vorgaenge + bericht.faellige_sicherheiten} Fristen faellig`,
         text: zeilen,
       }),
     }).catch(() => null);
   }
 
-  return NextResponse.json(bericht);
+  return NextResponse.json({ ...bericht, rohtexte_bereinigt: bereinigt?.betroffene ?? 0 });
 }
