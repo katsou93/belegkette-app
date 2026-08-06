@@ -109,7 +109,7 @@ describe("Hash-Kette", () => {
 
   it("bestätigt eine unversehrte Kette", async () => {
     const { rows } = await d.db.query<{ inhalt_unveraendert: boolean; kette_intakt: boolean }>(
-      "select * from kette_pruefen($1)",
+      "select seq, inhalt_unveraendert, kette_intakt from kette_pruefen($1)",
       [projektA],
     );
     expect(rows.length).toBeGreaterThan(0);
@@ -125,7 +125,7 @@ describe("Hash-Kette", () => {
     await d.db.exec("alter table entries enable trigger trg_entries_immutable");
 
     const { rows } = await d.db.query<{ seq: number; inhalt_unveraendert: boolean }>(
-      "select * from kette_pruefen($1) order by seq",
+      "select seq, inhalt_unveraendert, kette_intakt from kette_pruefen($1) order by seq",
       [projektA],
     );
     const betroffen = rows.find((r) => r.seq === 2);

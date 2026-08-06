@@ -166,7 +166,7 @@ describe("Betreibersicht", () => {
   });
 
   it("zeigt dem Betreiber alle Betriebe", async () => {
-    const { userId } = await nutzerAnlegen(d, "chef@prooftrail.de");
+    const { userId } = await nutzerAnlegen(d, "chef@aktenfest.de");
     await d.db.query("insert into app_admins (user_id, note) values ($1,'Gründer')", [userId]);
 
     const zeilen = await d.alsNutzer(userId, async () => {
@@ -191,7 +191,7 @@ describe("Betreibersicht", () => {
   });
 
   it("lässt den Betreiber einen Betrieb freischalten", async () => {
-    const { userId } = await nutzerAnlegen(d, "chef2@prooftrail.de");
+    const { userId } = await nutzerAnlegen(d, "chef2@aktenfest.de");
     await d.db.query("insert into app_admins (user_id) values ($1)", [userId]);
     const { rows: o } = await d.db.query<{ id: string }>(
       "select id from orgs where name = 'betrieb-drei.de'",
