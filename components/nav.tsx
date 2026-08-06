@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { sbServer } from "@/lib/server";
 
-export async function Seitenleiste({ aktiv }: { aktiv?: "projekte" | "kunden" | "lieferanten" }) {
+export async function Seitenleiste({ aktiv }: { aktiv?: "projekte" | "kunden" | "lieferanten" | "admin" }) {
   const sb = await sbServer();
   const { data: { user } } = await sb.auth.getUser();
-  const { data: projekte } = await sb.from("projects").select("id,name").eq("status", "aktiv").order("created_at", { ascending: false });
+  const [{ data: projekte }, { data: admin }] = await Promise.all([
+    sb.from("projects").select("id,name").eq("status", "aktiv").order("created_at", { ascending: false }),
+    user ? sb.from("app_admins").select("user_id").eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
   return (
     <aside className="side">
       <Link href="/projekte" className="brand">
@@ -16,6 +19,12 @@ export async function Seitenleiste({ aktiv }: { aktiv?: "projekte" | "kunden" | 
       <Link href="/lieferanten" className={aktiv === "lieferanten" ? "itm an" : "itm"}>Lieferanten</Link>
       <div className="grp">Projekte</div>
       {(projekte ?? []).map((p) => <Link key={p.id} href={`/projekte/${p.id}`} className="itm">{p.name}</Link>)}
+      {admin && (
+        <>
+          <div className="grp">Betrieb</div>
+          <Link href="/admin" className={aktiv === "admin" ? "itm an" : "itm"}>Kennzahlen</Link>
+        </>
+      )}
       <div className="sidefoot">{user?.email}</div>
     </aside>
   );
