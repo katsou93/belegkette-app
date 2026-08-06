@@ -3,12 +3,15 @@ import { sbServer } from "@/lib/server";
 import { euro } from "@/lib/browser";
 import { NeuesProjekt } from "@/components/ui";
 import { Seitenleiste } from "@/components/nav";
+import { ProbeHinweis } from "@/components/admin";
 export const dynamic = "force-dynamic";
 export default async function Projekte() {
 const sb = await sbServer();
 const { data: { user } } = await sb.auth.getUser();
 const { data: projekte } = await sb.from("projects").select("id,name,contract_value").eq("status", "aktiv").order("created_at", { ascending: false });
 const { data: kunden } = await sb.from("customers").select("id,name").order("name");
+const { data: m } = user ? await sb.from("memberships").select("org_id").eq("user_id", user.id).limit(1).maybeSingle() : { data: null };
+const { data: betrieb } = m ? await sb.from("orgs").select("plan,trial_ends_at").eq("id", m.org_id).maybeSingle() : { data: null };
 const ids = (projekte ?? []).map((p) => p.id);
 const { data: entries } = ids.length ? await sb.from("entries").select("project_id,deviation,status").in("project_id", ids) : { data: [] as { project_id: string; deviation: string; status: string }[] };
 const zaehl = (id: string) => {
@@ -23,6 +26,7 @@ return (
 <div><h1>Projekte</h1><div className="sub">{projekte?.length ?? 0} aktiv</div></div>
 <NeuesProjekt kunden={kunden ?? []} />
 </div>
+{betrieb && <ProbeHinweis plan={betrieb.plan} endetAm={betrieb.trial_ends_at} />}
 {!projekte?.length ? <div className="card" style={{ textAlign: "center", color: "var(--muted)", fontSize: ".9rem" }}>Noch kein Projekt angelegt.</div> : (
 <table>
 <thead><tr><th>Projekt</th><th className="num">Auftragswert</th><th className="num">Vermerke</th><th className="num">Offen</th></tr></thead>
