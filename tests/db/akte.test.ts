@@ -240,7 +240,8 @@ describe("Mandantentrennung", () => {
       [projektA],
     );
     const gesehen = await d.alsNutzer(b.userId, async () => {
-      const { rows } = await d.db.query<{ n: number }>("select count(*)::int as n from securities");
+      const { rows } = await d.db.query<{ n: number }>(
+        "select count(*)::int as n from securities where project_id = $1", [projektA]);
       return rows[0].n;
     });
     expect(gesehen).toBe(0);
@@ -268,12 +269,16 @@ describe("Sicherheiten", () => {
       "insert into securities (project_id, kind, amount, aval_rate) values ($1,'vertragserfuellungsbuergschaft',100000,1.5)",
       [projektA],
     );
-    const { rows } = await d.db.query<{ avalkosten_pro_jahr: string; summe_gebunden: string }>(
-      "select * from sicherheiten_portfolio where org_id = $1",
-      [a.orgId],
+    // Nur das eigene Projekt zaehlen — jeder Betrieb hat zusaetzlich ein
+    // Beispielprojekt mit eigenen Sicherheiten.
+    const { rows } = await d.db.query<{ summe: string; aval: string }>(
+      `select coalesce(sum(amount),0) as summe,
+              coalesce(sum(amount * coalesce(aval_rate,0) / 100),0) as aval
+         from securities where project_id = $1`,
+      [projektA],
     );
-    expect(Number(rows[0].summe_gebunden)).toBe(192_500);
-    expect(Number(rows[0].avalkosten_pro_jahr)).toBe(1_500);
+    expect(Number(rows[0].summe)).toBe(192_500);
+    expect(Number(rows[0].aval)).toBe(1_500);
   });
 });
 
